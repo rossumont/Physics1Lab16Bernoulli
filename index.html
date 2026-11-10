@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bernoulli's Principle</title>
+<style>
+:root{--bg:#0B1A2B;--fg:#F3EEDF;--mut:#8C9AAB;--g:#7FD4A8;--a:#E8B23A;--line:rgba(243,238,223,.18);--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:-apple-system,"Segoe UI","Noto Sans Thai",Sarabun,sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:28px 28px;-webkit-user-select:none;user-select:none}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 4px;gap:8px}
+h1{font-size:clamp(17px,4.5vw,22px);font-weight:800}
+.sub{color:var(--mut);font-size:12px;margin-top:2px}
+.hb{display:flex;gap:6px;flex:none}
+.ob{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:6px 14px;scrollbar-width:none;flex-wrap:nowrap;align-items:center}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--fg);border-radius:16px;padding:5px 11px;font:13px var(--mono);cursor:pointer}
+.chip.on{border-color:var(--g);color:var(--g);background:rgba(127,212,168,.1)}
+.chip.pt.on{border-color:var(--a);color:var(--a);background:rgba(232,178,58,.1)}
+.lbl{flex:none;color:var(--mut);font:11px var(--mono);margin-left:4px}
+.sep{flex:none;width:1px;height:20px;background:var(--line);margin:0 4px}
+.parts{display:flex;gap:0;margin:4px 14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}
+.parts button{border:none;background:transparent;color:var(--mut);padding:6px 16px;font-size:13px;cursor:pointer}
+.parts button.on{background:rgba(232,178,58,.15);color:var(--a);font-weight:700}
+.crows{padding:2px 0}
+.crows .chips{padding-top:3px;padding-bottom:3px}
+.chip.yc.on{border-color:var(--a);color:var(--a);background:rgba(232,178,58,.1)}
+.lbl.gl{color:var(--g)}.lbl.al{color:var(--a)}
+main{flex:1;min-height:0;position:relative}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.tbar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 12px;margin:0 12px;border:1px solid var(--line);border-radius:14px;background:rgba(11,26,43,.88)}
+.cmd{border:1px solid var(--a);color:var(--a);background:transparent;border-radius:10px;padding:8px 10px;font-size:14px;min-width:92px;cursor:pointer}
+.clock{font:600 clamp(22px,6vw,30px) var(--mono);letter-spacing:1px;min-width:7.2ch;text-align:center}
+.play{width:46px;height:46px;border-radius:50%;border:none;background:var(--g);color:#0B1A2B;font-size:17px;cursor:pointer}
+.play.run{background:var(--a)}
+.rst{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--fg);font-size:18px;cursor:pointer}
+.credit{font-size:10px;color:var(--mut);text-align:center;padding:6px 10px calc(6px + env(safe-area-inset-bottom));white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.credit::-webkit-scrollbar{display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:10;padding:14px}
+.modal.show{display:flex}
+.box{background:#102338;border:1px solid var(--line);border-radius:14px;padding:16px;width:100%;max-width:520px;max-height:90vh;overflow:auto}
+.box h3{font-size:15px;margin:14px 0 6px;color:var(--a)}
+.box h3:first-child{margin-top:0}
+input,textarea{width:100%;background:#0B1A2B;border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:8px;font:14px var(--mono);margin:4px 0;user-select:text;-webkit-user-select:text}
+textarea{height:70px;font-size:11px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0}
+.btn{border:1px solid var(--g);color:var(--g);background:transparent;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13px}
+table{width:100%;border-collapse:collapse;font:12px var(--mono)}
+td,th{border-bottom:1px solid var(--line);padding:4px;text-align:right}
+th{color:var(--mut);font-weight:400}
+.msg{font-size:12px;color:var(--a);min-height:16px;margin-top:4px}
+.mono{font:12px var(--mono);margin-top:6px;line-height:1.6}
+</style>
+</head>
+<body>
+<header>
+  <div><h1 id="t1"></h1><div class="sub" id="t2"></div></div>
+  <div class="hb"><button id="langBtn" class="ob"></button><button id="teachBtn" class="ob"></button></div>
+</header>
+<div id="parts" class="parts"></div>
+<div id="chips" class="crows"></div>
+<main id="stage"><canvas id="cv"></canvas></main>
+<div class="tbar">
+  <button id="cmdBtn" class="cmd"></button>
+  <div id="clock" class="clock">00:00.00</div>
+  <button id="playBtn" class="play">▶</button>
+  <button id="resetBtn" class="rst">↺</button>
+</div>
+<div id="credit" class="credit"></div>
+
+<div id="pwModal" class="modal"><div class="box">
+  <h3 id="pwTitle"></h3>
+  <input id="pwIn" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <div class="msg" id="pwMsg"></div>
+  <div class="row"><button class="btn" id="pwOk"></button><button class="btn" id="pwCancel" style="border-color:var(--line);color:var(--fg)"></button></div>
+</div></div>
+<div id="tModal" class="modal"><div class="box" id="tBox"></div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const L={
+en:{t1:"Bernoulli's Principle",t2:"Venturi tube · Torricelli's law · Height difference",p1:"Venturi",p2:"Torricelli",p3:"Height",rise:"Rise",d3:"Top Ø",flow:"Flow",thr:"Throat",collect:"Collect",drain:"Drain",on:"Open hole",off:"Close hole",teach:"Teacher",lang:"ไทย",
+credit:"Asst.Prof.Dr. Rossumont Jaryabhand · Rajamangala University of Technology Tawan-ok, Uthenthawai Campus · No Right Reserved",
+pw:"Teacher password",enter:"Enter",cancel:"Cancel",wrong:"Wrong password",close:"Close",ans:"Answer key",set:"Settings",noise:"Noise",parts:"Parts",both:"All",free:"Student",link:"Student link",gen:"Generate link",copy:"Copy",copied:"Copied",chg:"Change password",newpw:"New password",email:"Email",admpw:"Admin password",save:"Save",saved:"Saved (this browser)",bad:"Email or admin password incorrect",tube:"Tube",full:"FULL",hl:"Water level h",yl:"Hole height y",ws:"Lab worksheet",wsOpen:"Open worksheet",q:"Flow rate Q",t1L:"Time for 1 L",tw:"Throat"},
+th:{t1:"กฎของเบอร์นูลลี",t2:"ท่อเวนทูรี · กฎของทอร์ริเชลลี · ความสูงต่างกัน",p1:"เวนทูรี",p2:"ทอร์ริเชลลี",p3:"ความสูงต่างกัน",rise:"ยกสูง",d3:"Ø ท่อบน",flow:"อัตราไหล",thr:"คอคอด",collect:"เก็บน้ำ",drain:"เทน้ำทิ้ง",on:"เปิดรู",off:"ปิดรู",teach:"ครู",lang:"EN",
+credit:"ผศ.ดร.รสสุมนต์ จารยะพันธุ์ · มหาวิทยาลัยเทคโนโลยีราชมงคลตะวันออก อุเทนถวาย · ไม่สงวนลิขสิทธิ์",
+pw:"รหัสผ่านครู",enter:"เข้า",cancel:"ยกเลิก",wrong:"รหัสผ่านไม่ถูกต้อง",close:"ปิด",ans:"เฉลย",set:"ตั้งค่า",noise:"ความคลาดเคลื่อน",parts:"ส่วนการทดลอง",both:"ทั้งหมด",free:"นศ.เลือกเอง",link:"ลิงก์นักศึกษา",gen:"สร้างลิงก์",copy:"คัดลอก",copied:"คัดลอกแล้ว",chg:"เปลี่ยนรหัสผ่าน",newpw:"รหัสผ่านใหม่",email:"อีเมล",admpw:"รหัสผ่านผู้ดูแล",save:"บันทึก",saved:"บันทึกแล้ว (เฉพาะเบราว์เซอร์นี้)",bad:"อีเมลหรือรหัสผ่านผู้ดูแลไม่ถูกต้อง",tube:"ท่อ",full:"เต็ม",hl:"ระดับน้ำ h",yl:"ความสูงรู y",ws:"ใบทดลอง",wsOpen:"เปิดใบทดลอง",q:"อัตราการไหล Q",t1L:"เวลาเก็บน้ำ 1 L",tw:"คอคอด"}};
+
+/* ---------- settings ---------- */
+const PWDEF="9;5:4*5\u2018", ADM_EMAIL="rossumont@gmail.com", ADM_PW="LhaMoAPL9545=";
+const normPw=s=>(s||"").replace(/[\u2018\u2019\u201A\u201B'`\u00B4]/g,"'").replace(/[\u201C\u201D"]/g,'"').trim();
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+let CFG={noise:1,thr:0,parts:0}, STUDENT=false, UNLOCK=false;
+function enc(o){const s=btoa(JSON.stringify(o)).replace(/=+$/,"");const r=()=>Math.random().toString(36).slice(2,8).padEnd(6,"x");return r()+s.split("").reverse().join("")+r();}
+function dec(k){try{let s=k.slice(6,-6).split("").reverse().join("");while(s.length%4)s+="=";return JSON.parse(atob(s))}catch(e){return null}}
+(function(){const k=new URLSearchParams(location.search).get("k");const o=k&&dec(k);
+ if(o){CFG=Object.assign(CFG,o);STUDENT=true}else{try{const s=JSON.parse(ls("bern_cfg")||"null");if(s)CFG=Object.assign(CFG,s)}catch(e){}}})();
+function saveCfg(){if(!STUDENT)ls("bern_cfg",JSON.stringify(CFG))}
+
+/* ---------- physics ---------- */
+const g=9.81,D1=26,QL=[0.06,0.09,0.12,0.15,0.18],HA=[420,412,404,396,388],UT=[0.1,0.31,0.45,0.68,0.94];
+const area=d=>Math.PI*Math.pow(d/2000,2);
+const TANK_A=75e-4,HOLE_D=4,AR=TANK_A/area(HOLE_D);
+function diam(u,d2){if(u<0.2)return D1;if(u<0.42)return D1-(D1-d2)*(u-0.2)/0.22;if(u<0.48)return d2;if(u<0.88)return d2+(D1-d2)*(u-0.48)/0.4;return D1}
+const S={part:(STUDENT&&+CFG.parts)||1,flow:3,thr:12,h:20,hd:20,y:30,coll:true,vol:0,on:false,lang:"en",dz:100,d3:26,vol3:0};
+const thr=()=>CFG.thr||S.thr;
+const NZ={qf:1,bias:[0,0,0,0,0],cv:0.97};
+function mkNoise(){const n=+CFG.noise||0;NZ.qf=1+n*(Math.random()-.5)*0.03;NZ.bias=NZ.bias.map(()=>n*(Math.random()-.5)*2);NZ.cv=0.97+n*(Math.random()-.5)*0.02}
+function venturi(){const d2=thr(),Q=QL[S.flow-1]/1000*NZ.qf;const D=UT.map(u=>+diam(u,d2).toFixed(1));const v=D.map(d=>Q/area(d));
+ const v1=v[0],v2=v[2],dk=(v2*v2-v1*v1)/(2*g),loss=[0,0,0,0.08*dk,0.15*dk];
+ const h=v.map((vi,i)=>HA[S.flow-1]/1000+(v1*v1-vi*vi)/(2*g)-loss[i]);return{D,v,h,Q}}
+mkNoise();
+let VT=venturi(); const hd=VT.h.map((x,i)=>x*1000+NZ.bias[i]);
+/* part 3: pipe rising to a higher level */
+const U3=[0.12,0.34,0.66,0.88];
+function z3(u){return u<0.42?0:u<0.55?S.dz*(u-0.42)/0.13:S.dz}
+function diam3(u){return u<0.42?D1:u<0.55?D1+(S.d3-D1)*(u-0.42)/0.13:S.d3}
+function rise(){const Q=QL[S.flow-1]/1000*NZ.qf,D=U3.map(diam3),z=U3.map(z3),v=D.map(d=>Q/area(d)),f=Math.pow(Q/0.18e-3,2)*0.016;
+ const h=v.map((vi,i)=>HA[S.flow-1]/1000+(v[0]*v[0]-vi*vi)/(2*g)-f*(U3[i]-U3[0]));return{D,z,v,h,Q}}
+let VR=rise(); const hd3=VR.h.map((x,i)=>x*1000+NZ.bias[i]);
+const P=Array.from({length:70},()=>({u:Math.random(),o:Math.random()*2-1}));
+
+/* ---------- canvas ---------- */
+const cv=$("cv"),ctx=cv.getContext("2d"),buf=document.createElement("canvas"),b=buf.getContext("2d");
+let W=0,H=0,DPR=1,T=0,last=performance.now();
+function resize(){const r=$("stage").getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2.5);W=r.width;H=r.height;[cv,buf].forEach(c=>{c.width=Math.max(1,Math.round(W*DPR));c.height=Math.max(1,Math.round(H*DPR))})}
+new ResizeObserver(resize).observe($("stage"));resize();
+
+const FG="rgba(243,238,223,", WATER="rgba(70,150,215,.78)", GLASS="rgba(200,230,255,.6)", MONO='ui-monospace,"SF Mono",Menlo,Consolas,monospace';
+function txt(c,s,x,y,al,sz,col){c.font=(sz||10)+"px "+MONO;c.textAlign=al||"left";c.textBaseline="middle";c.fillStyle=col||FG+".7)";c.fillText(s,x,y)}
+
+function update(dt){
+ if(S.part===1){VT=venturi();
+  for(let i=0;i<5;i++)hd[i]+=(VT.h[i]*1000+NZ.bias[i]-hd[i])*Math.min(1,dt*2.5);
+  if(S.coll)S.vol=Math.min(3,S.vol+VT.Q*1000*dt);else S.vol=Math.max(0,S.vol-0.8*dt);
+  const d2=thr();P.forEach(p=>{p.u+=dt*(VT.Q/area(diam(p.u,d2)))*0.22;if(p.u>1)p.u-=1})}
+ else if(S.part===3){VR=rise();
+  for(let i=0;i<4;i++)hd3[i]+=(VR.h[i]*1000+NZ.bias[i]-hd3[i])*Math.min(1,dt*2.5);
+  if(S.coll)S.vol3=Math.min(3,S.vol3+VR.Q*1000*dt);else S.vol3=Math.max(0,S.vol3-0.8*dt);
+  P.forEach(p=>{p.u+=dt*(VR.Q/area(diam3(p.u)))*0.22;if(p.u>1)p.u-=1})}
+ else if(S.part===2&&S.on&&S.hd>0){const hm=S.hd/100;S.hd=Math.max(0,S.hd-100*NZ.cv*Math.sqrt(2*g*hm)/AR*dt)}
+}
+
+function drawP1(c){
+ const port=W<H*1.05,m=10,d2=thr(),L1=L[S.lang];
+ const tankW=port?Math.max(64,W*0.23):Math.min(190,W*0.17);
+ const tx1=W-m-8,tx0=tx1-tankW,x0=m+28,x1=tx0-24;
+ const yP=Math.round(H*(port?0.64:0.62)),top=m+20,ppm=(yP-top)/450;
+ const rmax=Math.max(7,Math.min(18,(x1-x0)*0.035,(H-yP)*0.1));
+ const X=u=>x0+(x1-x0)*u,R=u=>rmax*diam(u,d2)/D1;
+ // board
+ c.fillStyle="rgba(255,255,255,.035)";c.fillRect(x0,yP-450*ppm,x1-x0,450*ppm);
+ for(let mm=0;mm<=450;mm+=10){const y=yP-mm*ppm;c.strokeStyle=mm%50===0?FG+".34)":FG+".1)";c.lineWidth=1;c.beginPath();c.moveTo(x0,y);c.lineTo(x1,y);c.stroke();
+  if(mm%50===0){txt(c,String(mm),x0-4,y,"right",10);txt(c,String(mm),x1+3,y,"left",10)}}
+ txt(c,"mm",x0-4,m+6,"right",10,FG+".5)");
+ // outlet pipe
+ const ro=rmax*0.75,xc=tx0+tankW*0.35,yT0=yP+rmax+34,yT1=H-m,yOut=yT0-6;
+ c.fillStyle=WATER;c.strokeStyle=GLASS;c.lineWidth=1.5;
+ c.beginPath();c.moveTo(X(1)-1,yP-ro);c.lineTo(xc+ro,yP-ro);c.lineTo(xc+ro,yOut);c.lineTo(xc-ro,yOut);c.lineTo(xc-ro,yP+ro);c.lineTo(X(1)-1,yP+ro);c.closePath();c.fill();c.stroke();
+ // inlet + venturi body
+ c.beginPath();c.moveTo(m,yP-rmax);for(let u=0;u<=1.0001;u+=0.01)c.lineTo(X(u),yP-R(u));
+ for(let u=1;u>=-0.0001;u-=0.01)c.lineTo(X(u),yP+R(u));c.lineTo(m,yP+rmax);c.closePath();c.fill();c.stroke();
+ txt(c,"Ø mm",m,yP+rmax+12,"left",9,FG+".5)");
+ // particles
+ c.fillStyle="rgba(255,255,255,.55)";P.forEach(p=>{c.beginPath();c.arc(X(p.u),yP+p.o*R(p.u)*0.7,1.3,0,7);c.fill()});
+ // tubes
+ const tw=Math.max(5,Math.min(10,rmax*0.55));
+ UT.forEach((u,i)=>{const x=X(u),yb=yP-R(u)+1,yt=yP-450*ppm-4;
+  const lvl=hd[i]+(+CFG.noise||0)*0.5*Math.sin(T*6+i*1.7),yl=yP-lvl*ppm;
+  c.fillStyle="rgba(255,255,255,.05)";c.fillRect(x-tw/2,yt,tw,yb-yt);
+  c.fillStyle=WATER;c.fillRect(x-tw/2+1,yl,tw-2,yb-yl+1);
+  c.strokeStyle="rgba(150,210,255,.95)";c.lineWidth=1;c.beginPath();c.moveTo(x-tw/2+1,yl-1.2);c.quadraticCurveTo(x,yl+1.2,x+tw/2-1,yl-1.2);c.stroke();
+  c.strokeStyle=GLASS;c.strokeRect(x-tw/2,yt,tw,yb-yt);
+  txt(c,"ABCDE"[i],x,m+6,"center",12,"#E8B23A");
+  txt(c,"Ø"+VT.D[i].toFixed(1),x,yP+rmax+(i%2?24:12),"center",10,"#7FD4A8")});
+ // stream into tank
+ const th=yT1-yT0,yw=yT1-S.vol/3*th;
+ c.fillStyle="rgba(70,150,215,.6)";c.fillRect(xc-ro*0.55,yOut,ro*1.1,yw-yOut);
+ // tank
+ c.fillStyle="rgba(255,255,255,.04)";c.fillRect(tx0,yT0,tankW,th);
+ c.fillStyle=WATER;c.fillRect(tx0,yw,tankW,yT1-yw);
+ for(let k=0;k<=30;k++){const y=yT1-k/30*th,len=k%5===0?10:5;c.strokeStyle=FG+(k%5===0?".7)":".4)");c.beginPath();c.moveTo(tx1,y);c.lineTo(tx1-len,y);c.stroke();
+  if(k%5===0&&k>0)txt(c,(k/10).toFixed(1),tx1-13,y,"right",9)}
+ txt(c,"L",tx1-3,yT0-8,"right",10,FG+".6)");
+ c.strokeStyle=GLASS;c.lineWidth=1.5;c.beginPath();c.moveTo(tx0,yT0);c.lineTo(tx0,yT1);c.lineTo(tx1,yT1);c.lineTo(tx1,yT0);c.stroke();
+ // drain
+ c.fillStyle=S.coll?"#E8B23A":"#7FD4A8";c.fillRect(tx1,yT1-8,8,6);
+ if(!S.coll&&S.vol>0){c.fillStyle="rgba(70,150,215,.8)";c.fillRect(tx1+3,yT1-4,5,m+4)}
+ if(S.vol>=3)txt(c,L1.full,tx0+tankW/2,yT0+10,"center",11,"#E8B23A");
+}
+
+function drawP3(c){
+ const port=W<H*1.05,m=10,L1=L[S.lang];
+ const tankW=port?Math.max(64,W*0.23):Math.min(190,W*0.17);
+ const tx1=W-m-8,tx0=tx1-tankW,x0=m+28,x1=tx0-24;
+ const yP=Math.round(H*(port?0.64:0.62)),top=m+20,ppm=(yP-top)/450;
+ const rmax=Math.max(7,Math.min(18,(x1-x0)*0.035,(H-yP)*0.1));
+ const X=u=>x0+(x1-x0)*u,R=u=>rmax*diam3(u)/D1,YC=u=>yP-z3(u)*ppm;
+ // board
+ c.fillStyle="rgba(255,255,255,.035)";c.fillRect(x0,yP-450*ppm,x1-x0,450*ppm);
+ for(let mm=0;mm<=450;mm+=10){const y=yP-mm*ppm;c.strokeStyle=mm%50===0?FG+".34)":FG+".1)";c.lineWidth=1;c.beginPath();c.moveTo(x0,y);c.lineTo(x1,y);c.stroke();
+  if(mm%50===0){txt(c,String(mm),x0-4,y,"right",10);txt(c,String(mm),x1+3,y,"left",10)}}
+ txt(c,"mm",x0-4,m+6,"right",10,FG+".5)");
+ // outlet pipe
+ const ro=R(1),xc=tx0+tankW*0.35,yT0=yP+rmax+34,yT1=H-m,yOut=yT0-6,yE=YC(1);
+ c.fillStyle=WATER;c.strokeStyle=GLASS;c.lineWidth=1.5;
+ c.beginPath();c.moveTo(X(1)-1,yE-ro);c.lineTo(xc+ro,yE-ro);c.lineTo(xc+ro,yOut);c.lineTo(xc-ro,yOut);c.lineTo(xc-ro,yE+ro);c.lineTo(X(1)-1,yE+ro);c.closePath();c.fill();c.stroke();
+ // pipe body
+ c.beginPath();c.moveTo(m,yP-rmax);for(let u=0;u<=1.0001;u+=0.005)c.lineTo(X(u),YC(u)-R(u));
+ for(let u=1;u>=-0.0001;u-=0.005)c.lineTo(X(u),YC(u)+R(u));c.lineTo(m,yP+rmax);c.closePath();c.fill();c.stroke();
+ txt(c,"Ø mm",m,yP+rmax+12,"left",9,FG+".5)");
+ // particles
+ c.fillStyle="rgba(255,255,255,.55)";P.forEach(p=>{c.beginPath();c.arc(X(p.u),YC(p.u)+p.o*R(p.u)*0.7,1.3,0,7);c.fill()});
+ // tubes
+ const tw=Math.max(5,Math.min(10,rmax*0.55));
+ U3.forEach((u,i)=>{const x=X(u),yb=YC(u)-R(u)+1,yt=yP-450*ppm-4;
+  const lvl=hd3[i]+(+CFG.noise||0)*0.5*Math.sin(T*6+i*1.7),yl=yP-lvl*ppm;
+  c.fillStyle="rgba(255,255,255,.05)";c.fillRect(x-tw/2,yt,tw,yb-yt);
+  c.fillStyle=WATER;c.fillRect(x-tw/2+1,yl,tw-2,yb-yl+1);
+  c.strokeStyle="rgba(150,210,255,.95)";c.lineWidth=1;c.beginPath();c.moveTo(x-tw/2+1,yl-1.2);c.quadraticCurveTo(x,yl+1.2,x+tw/2-1,yl-1.2);c.stroke();
+  c.strokeStyle=GLASS;c.strokeRect(x-tw/2,yt,tw,yb-yt);
+  txt(c,"ABCD"[i],x,m+6,"center",12,"#E8B23A");
+  txt(c,"Ø"+diam3(u).toFixed(1),x,YC(u)+R(u)+12,"center",10,"#7FD4A8")});
+ // stream into tank
+ const th=yT1-yT0,yw=yT1-S.vol3/3*th;
+ c.fillStyle="rgba(70,150,215,.6)";c.fillRect(xc-ro*0.55,yOut,ro*1.1,yw-yOut);
+ // tank
+ c.fillStyle="rgba(255,255,255,.04)";c.fillRect(tx0,yT0,tankW,th);
+ c.fillStyle=WATER;c.fillRect(tx0,yw,tankW,yT1-yw);
+ for(let k=0;k<=30;k++){const y=yT1-k/30*th,len=k%5===0?10:5;c.strokeStyle=FG+(k%5===0?".7)":".4)");c.beginPath();c.moveTo(tx1,y);c.lineTo(tx1-len,y);c.stroke();
+  if(k%5===0&&k>0)txt(c,(k/10).toFixed(1),tx1-13,y,"right",9)}
+ txt(c,"L",tx1-3,yT0-8,"right",10,FG+".6)");
+ c.strokeStyle=GLASS;c.lineWidth=1.5;c.beginPath();c.moveTo(tx0,yT0);c.lineTo(tx0,yT1);c.lineTo(tx1,yT1);c.lineTo(tx1,yT0);c.stroke();
+ c.fillStyle=S.coll?"#E8B23A":"#7FD4A8";c.fillRect(tx1,yT1-8,8,6);
+ if(!S.coll&&S.vol3>0){c.fillStyle="rgba(70,150,215,.8)";c.fillRect(tx1+3,yT1-4,5,m+4)}
+ if(S.vol3>=3)txt(c,L1.full,tx0+tankW/2,yT0+10,"center",11,"#E8B23A");
+}
+
+function drawP2(c){
+ const m=12,s=Math.min((W-2*m)/1.17,(H-2*m)/0.9),ox=(W-1.17*s)/2+0.3*s,fy=H-m-0.035*s;
+ const SX=x=>ox+x*s,SY=y=>fy-y*s,y=S.y/100,h=Math.max(0,S.hd/100),lev=y+h,yb=y-0.04,ytop=yb+0.42;
+ // floor
+ c.strokeStyle=FG+".5)";c.lineWidth=1.5;c.beginPath();c.moveTo(SX(-0.3),fy);c.lineTo(SX(0.87),fy);c.stroke();
+ // floor ruler
+ c.fillStyle="rgba(232,178,58,.08)";c.fillRect(SX(0),fy-0.018*s,0.85*s,0.018*s);
+ for(let k=0;k<=85;k++){const x=SX(k/100),len=k%10===0?0.018*s:k%5===0?0.012*s:0.007*s;c.strokeStyle=FG+(k%10===0?".8)":".45)");c.lineWidth=1;c.beginPath();c.moveTo(x,fy);c.lineTo(x,fy-len);c.stroke();
+  if(k%10===0)txt(c,String(k),x,fy+9,"center",10)}
+ txt(c,"cm",SX(0.87),fy+9,"right",9,FG+".5)");
+ // vertical ruler
+ const rx=SX(-0.27);
+ for(let k=0;k<=80;k++){const yy=SY(k/100),len=k%10===0?0.016*s:k%5===0?0.011*s:0.006*s;c.strokeStyle=FG+(k%10===0?".8)":".4)");c.beginPath();c.moveTo(rx,yy);c.lineTo(rx+len,yy);c.stroke();
+  if(k%10===0)txt(c,String(k),rx-3,yy,"right",10,"#E8B23A")}
+ c.strokeStyle=FG+".5)";c.beginPath();c.moveTo(rx,fy);c.lineTo(rx,SY(0.8));c.stroke();
+ c.strokeStyle="rgba(232,178,58,.7)";c.setLineDash([3,4]);c.beginPath();c.moveTo(rx,SY(y));c.lineTo(SX(0),SY(y));c.stroke();c.setLineDash([]);
+ // stand
+ c.fillStyle="#34475C";c.fillRect(SX(-0.195),SY(yb),0.012*s,yb*s);c.fillRect(SX(-0.017),SY(yb),0.012*s,yb*s);c.fillRect(SX(-0.21),SY(yb),0.22*s,0.01*s);
+ // water in tank
+ c.fillStyle=WATER;c.fillRect(SX(-0.2),SY(lev),0.2*s,(lev-yb)*s);
+ c.strokeStyle="rgba(150,210,255,.9)";c.beginPath();c.moveTo(SX(-0.2),SY(lev));c.lineTo(SX(0),SY(lev));c.stroke();
+ // tank walls
+ c.strokeStyle=GLASS;c.lineWidth=2;c.beginPath();c.moveTo(SX(-0.2),SY(ytop));c.lineTo(SX(-0.2),SY(yb));c.lineTo(SX(0),SY(yb));c.lineTo(SX(0),SY(ytop));c.stroke();
+ // tank scale (0 at hole)
+ for(let k=0;k<=35;k++){const yy=SY(y+k/100),len=k%5===0?0.012*s:0.006*s;c.strokeStyle=FG+(k%5===0?".8)":".4)");c.lineWidth=1;c.beginPath();c.moveTo(SX(-0.2),yy);c.lineTo(SX(-0.2)-len,yy);c.stroke();
+  if(k%5===0)txt(c,String(k),SX(-0.2)-len-2,yy,"right",9,"#7FD4A8")}
+ // labels
+ txt(c,"A = 75 cm²",SX(-0.1),SY(yb)+0.05*s,"center",10,"#7FD4A8");txt(c,"Ø4 mm",SX(0)+6,SY(y)-10,"left",10,"#7FD4A8");
+ // hole
+ c.fillStyle="#061019";c.beginPath();c.arc(SX(0),SY(y),Math.max(2.5,0.004*s),0,7);c.fill();
+ // jet
+ if(S.on&&h>0.002){const v=NZ.cv*Math.sqrt(2*g*h),Tf=Math.sqrt(2*y/g),xj=(+CFG.noise||0)*0.0015*Math.sin(T*3.1);
+  c.beginPath();for(let i=0;i<=60;i++){const t=Tf*i/60;c.lineTo(SX(v*t+xj*i/60),SY(y-g*t*t/2))}
+  c.strokeStyle="rgba(70,150,215,.45)";c.lineWidth=Math.max(2,0.006*s);c.stroke();
+  c.setLineDash([7,6]);c.lineDashOffset=-T*70;c.strokeStyle="rgba(150,210,255,.9)";c.lineWidth=Math.max(1.5,0.004*s);c.stroke();c.setLineDash([]);
+  const xs=SX(v*Tf+xj);c.strokeStyle="rgba(150,210,255,.8)";c.lineWidth=1;
+  for(let k=-1;k<=1;k+=2){c.beginPath();c.moveTo(xs,fy-1);c.quadraticCurveTo(xs+k*6,fy-8-2*Math.abs(Math.sin(T*9)),xs+k*10,fy-1);c.stroke()}}
+}
+
+/* ---------- lens ---------- */
+const lens={on:false,x:0,y:0};
+function lensPos(e){const r=cv.getBoundingClientRect();lens.x=(e.clientX-r.left)*DPR;lens.y=(e.clientY-r.top)*DPR}
+cv.addEventListener("pointerdown",e=>{lens.on=true;lensPos(e);try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+cv.addEventListener("pointermove",e=>{if(lens.on)lensPos(e)});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>cv.addEventListener(ev,()=>lens.on=false));
+function drawLens(){const Z=3,R=75*DPR,sw=2*R/Z;
+ let sx=Math.min(Math.max(lens.x-sw/2,0),buf.width-sw),sy=Math.min(Math.max(lens.y-sw/2,0),buf.height-sw);
+ let lx=lens.x,ly=lens.y-R-30*DPR;if(ly<R)ly=lens.y+R+30*DPR;lx=Math.min(Math.max(lx,R+4),cv.width-R-4);
+ ctx.save();ctx.beginPath();ctx.arc(lx,ly,R,0,7);ctx.fillStyle="#0B1A2B";ctx.fill();ctx.clip();
+ ctx.drawImage(buf,sx,sy,sw,sw,lx-R,ly-R,2*R,2*R);
+ const cy=ly-R+(lens.y-sy)*Z;ctx.strokeStyle="rgba(232,178,58,.8)";ctx.lineWidth=DPR;ctx.beginPath();ctx.moveTo(lx-R,cy);ctx.lineTo(lx+R,cy);ctx.stroke();
+ ctx.restore();ctx.strokeStyle="#E8B23A";ctx.lineWidth=2*DPR;ctx.beginPath();ctx.arc(lx,ly,R,0,7);ctx.stroke()}
+
+/* ---------- stopwatch ---------- */
+let tRun=false,tStart=0,tAcc=0;
+function fmt(ms){const cs=Math.floor(ms/10),m=Math.floor(cs/6000),s=Math.floor(cs/100)%60,c=cs%100;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")+"."+String(c).padStart(2,"0")}
+$("playBtn").onclick=()=>{const n=performance.now();if(!tRun){tStart=n;tRun=true}else{tAcc+=n-tStart;tRun=false}$("playBtn").textContent=tRun?"❚❚":"▶";$("playBtn").classList.toggle("run",tRun)};
+$("resetBtn").onclick=()=>{tRun=false;tAcc=0;$("playBtn").textContent="▶";$("playBtn").classList.remove("run");$("clock").textContent=fmt(0)};
+
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;T+=dt;update(dt);
+ b.setTransform(DPR,0,0,DPR,0,0);b.clearRect(0,0,W,H);S.part===1?drawP1(b):S.part===2?drawP2(b):drawP3(b);
+ ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(buf,0,0);if(lens.on)drawLens();
+ if(tRun)$("clock").textContent=fmt(tAcc+now-tStart);requestAnimationFrame(frame)}
+
+/* ---------- UI ---------- */
+function chip(l,on,fn,cls){const e=document.createElement("button");e.className="chip"+(cls?" "+cls:"")+(on?" on":"");e.textContent=l;e.onclick=fn;return e}
+function lab(t){const e=document.createElement("span");e.className="lbl";e.textContent=t;return e}
+function sep(){const e=document.createElement("span");e.className="sep";return e}
+function crow(){const r=document.createElement("div");r.className="chips";$("chips").append(r);return r}
+function renderChips(){const t=L[S.lang],pb=$("parts");pb.innerHTML="";$("chips").innerHTML="";
+ const lockP=STUDENT&&+CFG.parts;pb.style.display=lockP?"none":"flex";
+ if(!lockP)[1,2,3].forEach(p=>{const e=document.createElement("button");e.textContent=t["p"+p];if(S.part===p)e.className="on";e.onclick=()=>{S.part=p;renderAll()};pb.append(e)});
+ if(S.part===1){const el=crow();el.append(lab(t.flow));[1,2,3,4,5].forEach(f=>el.append(chip(String(f),S.flow===f,()=>{S.flow=f;renderChips()})));
+  if(!+CFG.thr){el.append(lab(t.thr));[10,12,14].forEach(d=>el.append(chip("Ø"+d,S.thr===d,()=>{S.thr=d;renderChips()})))}}
+ else if(S.part===3){const el=crow();el.append(lab(t.flow));[1,2,3,4,5].forEach(f=>el.append(chip(String(f),S.flow===f,()=>{S.flow=f;renderChips()})));
+  el.append(sep());el.append(lab(t.rise));[0,100,200,300].forEach(v=>el.append(chip(v+" mm",S.dz===v,()=>{S.dz=v;renderChips()},"yc")));
+  el.append(sep());el.append(lab(t.d3));[26,18].forEach(d=>el.append(chip("Ø"+d,S.d3===d,()=>{S.d3=d;renderChips()})))}
+ else{const r1=crow(),l1=lab(t.hl);l1.classList.add("gl");r1.append(l1);[10,15,20,25,30].forEach(v=>r1.append(chip(v+" cm",S.h===v,()=>{S.h=v;S.hd=v;S.on=false;renderChips();renderCmd()})));
+  const r2=crow(),l2=lab(t.yl);l2.classList.add("al");r2.append(l2);[20,30,40].forEach(v=>r2.append(chip(v+" cm",S.y===v,()=>{S.y=v;renderChips()},"yc")))}}
+function renderCmd(){const t=L[S.lang];$("cmdBtn").textContent=S.part!==2?(S.coll?t.drain:t.collect):(S.on?t.off:t.on)}
+$("cmdBtn").onclick=()=>{if(S.part!==2)S.coll=!S.coll;else S.on=!S.on;renderCmd()};
+function renderAll(){const t=L[S.lang];document.documentElement.lang=S.lang;$("t1").textContent=t.t1;$("t2").textContent=t.t2;$("langBtn").textContent=t.lang;$("teachBtn").textContent=t.teach;$("credit").textContent=t.credit;document.title=t.t1;renderChips();renderCmd();if($("tModal").classList.contains("show"))buildPanel()}
+$("langBtn").onclick=()=>{S.lang=S.lang==="en"?"th":"en";renderAll()};
+
+/* ---------- teacher ---------- */
+function curPw(){return ls("bern_pw")||PWDEF}
+$("teachBtn").onclick=()=>{if(UNLOCK){openPanel();return}const t=L[S.lang];$("pwTitle").textContent=t.pw;$("pwOk").textContent=t.enter;$("pwCancel").textContent=t.cancel;$("pwMsg").textContent="";$("pwIn").value="";$("pwModal").classList.add("show");setTimeout(()=>$("pwIn").focus(),50)};
+function tryPw(){if(normPw($("pwIn").value)===normPw(curPw())){UNLOCK=true;$("pwModal").classList.remove("show");openPanel()}else $("pwMsg").textContent=L[S.lang].wrong}
+$("pwOk").onclick=tryPw;$("pwIn").onkeydown=e=>{if(e.key==="Enter")tryPw()};$("pwCancel").onclick=()=>$("pwModal").classList.remove("show");
+function openPanel(){buildPanel();$("tModal").classList.add("show")}
+function cbtn(k,l,on){return`<button class="chip${on?" on":""}" data-k="${k}">${l}</button>`}
+function buildPanel(){const t=L[S.lang];let h=`<h3>${t.ans} — ${t["p"+S.part]}</h3>`;
+ if(S.part===1){const V=venturi();h+=`<table><tr><th>${t.tube}</th><th>Ø (mm)</th><th>v (m/s)</th><th>h (mm)</th></tr>`+V.D.map((d,i)=>`<tr><td>${"ABCDE"[i]}</td><td>${d.toFixed(1)}</td><td>${V.v[i].toFixed(3)}</td><td>${(V.h[i]*1000+NZ.bias[i]).toFixed(1)}</td></tr>`).join("")+`</table>`;
+  const q=V.Q*1000;h+=`<div class="mono">${t.q} = ${q.toFixed(4)} L/s<br>${t.t1L} = ${(1/q).toFixed(2)} s<br>h<sub>A</sub>−h<sub>C</sub> = ${((V.h[0]-V.h[2])*1000).toFixed(1)} mm<br>(v<sub>C</sub>²−v<sub>A</sub>²)/2g = ${((V.v[2]**2-V.v[0]**2)/(2*g)*1000).toFixed(1)} mm</div>`}
+ else if(S.part===2){const hh=S.hd/100,yy=S.y/100,v=NZ.cv*Math.sqrt(2*g*hh),x=2*NZ.cv*Math.sqrt(hh*yy),td=(h1,h2)=>AR*(Math.sqrt(h1)-Math.sqrt(h2))*Math.sqrt(2/g)/NZ.cv;
+  h+=`<div class="mono">y = ${S.y} cm · h (${S.lang==="th"?"ตอนนี้":"now"}) = ${S.hd.toFixed(1)} cm<br>v = C<sub>v</sub>√(2gh) = ${v.toFixed(3)} m/s<br>x = 2C<sub>v</sub>√(hy) = ${(x*100).toFixed(1)} cm<br>C<sub>v</sub> = ${NZ.cv.toFixed(3)} · A/a = ${AR.toFixed(0)}</div>`;
+  const marks=[25,20,15,10,5].filter(m=>m<S.h);
+  h+=`<table><tr><th>h (cm)</th><th>x (cm)</th><th>t ${S.h}→h (s)</th></tr>`+marks.map(m=>`<tr><td>${m}</td><td>${(200*NZ.cv*Math.sqrt(m/100*yy)).toFixed(1)}</td><td>${td(S.h/100,m/100).toFixed(1)}</td></tr>`).join("")+`</table>`}
+ else{const V=rise();h+=`<table><tr><th>${t.tube}</th><th>z (mm)</th><th>Ø (mm)</th><th>v (m/s)</th><th>h (mm)</th><th>p/ρg (mm)</th><th>h+v²/2g</th></tr>`+V.D.map((d,i)=>{const hh=V.h[i]*1000+NZ.bias[i];return`<tr><td>${"ABCD"[i]}</td><td>${V.z[i].toFixed(0)}</td><td>${d.toFixed(1)}</td><td>${V.v[i].toFixed(3)}</td><td>${hh.toFixed(1)}</td><td>${(hh-V.z[i]).toFixed(1)}</td><td>${(hh+V.v[i]**2/(2*g)*1000).toFixed(1)}</td></tr>`}).join("")+`</table>`;
+  const q=V.Q*1000;h+=`<div class="mono">${t.q} = ${q.toFixed(4)} L/s<br>${t.t1L} = ${(1/q).toFixed(2)} s<br>h = z + p/ρg (${S.lang==="th"?"วัดจากแนวกึ่งกลางท่อล่าง":"from lower pipe centre line"})</div>`}
+ h+=`<h3>${t.set}</h3><div class="row"><span class="lbl">${t.noise}</span>${[0,1,2].map(n=>cbtn("noise:"+n,n,+CFG.noise===n)).join("")}</div>`;
+ h+=`<div class="row"><span class="lbl">${t.tw}</span>${cbtn("thr:0",t.free,!+CFG.thr)}${[10,12,14].map(d=>cbtn("thr:"+d,"Ø"+d,+CFG.thr===d)).join("")}</div>`;
+ h+=`<div class="row"><span class="lbl">${t.parts}</span>${cbtn("parts:0",t.both,!+CFG.parts)}${cbtn("parts:1",t.p1,+CFG.parts===1)}${cbtn("parts:2",t.p2,+CFG.parts===2)}${cbtn("parts:3",t.p3,+CFG.parts===3)}</div>`;
+ h+=`<h3>${t.ws}</h3><div class="row"><button class="btn" data-k="ws">${t.wsOpen}</button></div>`;
+ h+=`<h3>${t.link}</h3><div class="row"><button class="btn" data-k="gen">${t.gen}</button><button class="btn" data-k="copy">${t.copy}</button></div><textarea id="linkOut" readonly></textarea><div class="msg" id="linkMsg"></div>`;
+ h+=`<h3>${t.chg}</h3><input id="npw" placeholder="${t.newpw}" autocapitalize="off"><input id="nem" placeholder="${t.email}" autocapitalize="off" type="email"><input id="nad" type="password" placeholder="${t.admpw}" autocapitalize="off"><div class="row"><button class="btn" data-k="chg">${t.save}</button></div><div class="msg" id="chgMsg"></div>`;
+ h+=`<div class="row" style="margin-top:14px"><button class="btn" data-k="close" style="border-color:var(--line);color:var(--fg)">${t.close}</button></div>`;
+ $("tBox").innerHTML=h}
+$("tBox").onclick=e=>{const el=e.target.closest("[data-k]");if(!el)return;const[k,v]=el.dataset.k.split(":"),t=L[S.lang];
+ if(k==="noise"){CFG.noise=+v;mkNoise();saveCfg();buildPanel()}
+ else if(k==="thr"){CFG.thr=+v;saveCfg();renderChips();buildPanel()}
+ else if(k==="parts"){CFG.parts=+v;if(+v&&STUDENT)S.part=+v;saveCfg();renderAll()}
+ else if(k==="gen"){const u=location.origin+location.pathname+"?k="+encodeURIComponent(enc({noise:CFG.noise,thr:CFG.thr,parts:CFG.parts}));$("linkOut").value=u;$("linkMsg").textContent=""}
+ else if(k==="copy"){const ta=$("linkOut");if(!ta.value)return;const ok=()=>$("linkMsg").textContent=t.copied;
+  if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(ok,()=>{ta.select();document.execCommand("copy");ok()});else{ta.select();document.execCommand("copy");ok()}}
+ else if(k==="chg"){const np=$("npw").value,em=$("nem").value.trim().toLowerCase(),ad=$("nad").value;
+  if(em===ADM_EMAIL&&ad===ADM_PW&&np.trim()){ls("bern_pw",np);$("chgMsg").textContent=t.saved;$("npw").value=$("nad").value=""}else $("chgMsg").textContent=t.bad}
+ else if(k==="ws")openWS();
+ else if(k==="close")$("tModal").classList.remove("show")};
+
+/* ---------- worksheet ---------- */
+function wsHTML(){const th=S.lang==="th";
+ const tb=(heads,n)=>`<table><tr>${heads.map(x=>`<th>${x}</th>`).join("")}</tr>${Array.from({length:n},()=>`<tr>${heads.map(()=>"<td></td>").join("")}</tr>`).join("")}</table>`;
+ const tbR=(heads,rows)=>`<table><tr>${heads.map(x=>`<th>${x}</th>`).join("")}</tr>${rows.map(r=>`<tr><td>${r}</td>${heads.slice(1).map(()=>"<td></td>").join("")}</tr>`).join("")}</table>`;
+ const T=th?{
+ title:"ใบทดลอง: กฎของเบอร์นูลลี",info:"ชื่อ ........................................ รหัส .................... กลุ่ม ....... วันที่ ..............",
+ obj:"จุดประสงค์",objs:["ตรวจสอบสมการของเบอร์นูลลีด้วยท่อเวนทูรี","หาอัตราการไหลของน้ำจากการจับเวลาเก็บน้ำ","ตรวจสอบกฎของทอร์ริเชลลีและหาสัมประสิทธิ์ความเร็ว C<sub>v</sub>","ตรวจสอบสมการของเบอร์นูลลีเมื่อท่อมีความสูงต่างกัน"],
+ thy:"ทฤษฎี",
+ p1:"ตอนที่ 1 ท่อเวนทูรี",
+ p1t:"ในท่อแนวระดับ ผลรวมของความสูงน้ำในหลอดวัดความดัน h กับ v²/2g มีค่าคงที่ (ถ้าไม่มีการสูญเสียพลังงาน)",
+ p1s:["เลือกขนาดคอคอด (Throat) และระดับอัตราไหล (Flow)","รอให้ระดับน้ำในหลอด A–E นิ่ง แล้วอ่านค่า h (mm) แตะค้างบนภาพเพื่อใช้แว่นขยาย","กด Drain ให้น้ำในถังล่างหมด แล้วกด Collect","กด ▶ เมื่อระดับน้ำผ่าน 0.5 L และกดหยุดเมื่อผ่าน 2.5 L (ปริมาตร 2.0 L) บันทึกเวลา","ทำซ้ำทุกระดับอัตราไหล 1–5"],
+ t1:"ตารางที่ 1 อัตราการไหล",t2:"ตารางที่ 2 ความสูงน้ำในหลอด (ระดับอัตราไหล ......)",t3:"ตารางที่ 3 เปรียบเทียบผลต่างความสูงระหว่างหลอด A กับ C",
+ lv:"ระดับ",tube:"หลอด",diff:"% ต่าง",
+ g1:"เขียนกราฟ (h<sub>A</sub> − h<sub>C</sub>) กับ Q² หาความชัน แล้วเทียบกับค่าตามทฤษฎี (1/A<sub>C</sub>² − 1/A<sub>A</sub>²)/2g",
+ p2:"ตอนที่ 2 กฎของทอร์ริเชลลี",
+ p2t:"น้ำพุ่งออกจากรูที่อยู่ลึกจากผิวน้ำ h ด้วยความเร็ว v = √(2gh) รูอยู่สูงจากพื้น y น้ำจะตกห่างจากถัง x = 2√(hy) ค่าจริงมีแรงเสียดทานจึงมีตัวคูณ C<sub>v</sub> = x<sub>วัด</sub> / x<sub>ทฤษฎี</sub> เมื่อน้ำไหลออก ระดับน้ำลดลง และ √h ลดลงเป็นเส้นตรงกับเวลา (ถังพื้นที่หน้าตัด A = 75 cm² รูเส้นผ่านศูนย์กลาง 4 mm)",
+ p2s:["เลือกความสูงรู y (อ่านจากไม้บรรทัดตั้งสีเหลือง)","เลือกระดับน้ำเริ่มต้น 30 cm (สเกลสีเขียวข้างถัง ศูนย์อยู่ที่รู)","กด เปิดรู พร้อมกด ▶ จับเวลา","ทุกครั้งที่ระดับน้ำผ่าน 25, 20, 15, 10, 5 cm ให้อ่านเวลาและระยะ x ที่น้ำตกถึงพื้น (ทำเป็นคู่ คนหนึ่งดูเวลา อีกคนอ่าน x)","ทำซ้ำกับ y ค่าอื่น"],
+ t4:"ตารางที่ 4 ระยะที่น้ำพุ่งและเวลา (y = ...... cm)",
+ g2:"เขียนกราฟ x กับ √(hy) ความชันเท่ากับ 2C<sub>v</sub> หาค่า C<sub>v</sub> และเขียนกราฟ √h กับ t ความชันเท่ากับ −(a/A)C<sub>v</sub>√(g/2)",
+ p3:"ตอนที่ 3 ท่อที่มีความสูงต่างกัน",
+ p3t:"เมื่อท่อยกสูงขึ้น z ความดันในท่อลดลง แต่ผลรวม z + p/ρg + v²/2g ยังคงที่ (ถ้าไม่มีการสูญเสียพลังงาน) ระดับน้ำในหลอดวัด h ซึ่งอ่านจากแนวกึ่งกลางท่อล่าง มีค่าเท่ากับ z + p/ρg",
+ p3s:["เลือกระดับอัตราไหล ความสูงที่ยก Δz และขนาดท่อบน","รอให้ระดับน้ำในหลอด A–D นิ่ง แล้วอ่านค่า h (mm)","หา Q โดยจับเวลาเก็บน้ำ 2.0 L เหมือนตอนที่ 1","ทำซ้ำกับ Δz = 0, 100, 200, 300 mm"],
+ t5:"ตารางที่ 5 ท่อความสูงต่างกัน (ระดับอัตราไหล ...... · Δz ...... mm · Ø ท่อบน ...... mm)",
+ g3:"เขียนกราฟ p/ρg ที่หลอด C กับ Δz ความชันควรมีค่าใกล้ −1",
+ q:"คำถามท้ายการทดลอง",qs:["เหตุใดระดับน้ำในหลอด C (คอคอด) จึงต่ำที่สุด","เหตุใดระดับน้ำในหลอด E จึงต่ำกว่าหลอด A ทั้งที่ท่อมีขนาดเท่ากัน","เหตุใด C<sub>v</sub> จึงมีค่าน้อยกว่า 1","ถ้าต้องการให้น้ำพุ่งไกลที่สุด โดยที่ระดับน้ำรวมคงที่ ควรเจาะรูที่ความสูงเท่าใด","ในตอนที่ 3 เมื่อท่อบนมีขนาดเท่าท่อล่าง เหตุใดระดับน้ำในหลอด C จึงใกล้เคียงหลอด A ทั้งที่ท่อสูงกว่า แต่ความดันในท่อที่ C น้อยกว่า"],
+ sum:"สรุปผลการทดลอง",print:"พิมพ์ / บันทึก PDF"
+ }:{
+ title:"Lab Worksheet: Bernoulli's Principle",info:"Name ........................................ ID .................... Group ....... Date ..............",
+ obj:"Objectives",objs:["Verify Bernoulli's equation using a Venturi tube","Find the flow rate by timing the collected water","Verify Torricelli's law and find the velocity coefficient C<sub>v</sub>","Verify Bernoulli's equation for a pipe at different heights"],
+ thy:"Theory",
+ p1:"Part 1 Venturi tube",
+ p1t:"In a horizontal pipe, the sum of the piezometer head h and v²/2g stays constant (if no energy is lost).",
+ p1s:["Choose the throat diameter and the flow level","Wait for the levels in tubes A–E to settle, then read h (mm). Touch and hold the picture to use the magnifier","Press Drain to empty the lower tank, then press Collect","Press ▶ when the water passes 0.5 L and stop when it passes 2.5 L (volume 2.0 L). Record the time","Repeat for flow levels 1–5"],
+ t1:"Table 1 Flow rate",t2:"Table 2 Tube heights (flow level ......)",t3:"Table 3 Head difference between tubes A and C",
+ lv:"Level",tube:"Tube",diff:"% diff",
+ g1:"Plot (h<sub>A</sub> − h<sub>C</sub>) against Q². Find the slope and compare it with (1/A<sub>C</sub>² − 1/A<sub>A</sub>²)/2g",
+ p2:"Part 2 Torricelli's law",
+ p2t:"Water leaves a hole at depth h below the surface with v = √(2gh). With the hole at height y above the floor, it lands at x = 2√(hy). Friction makes the real value smaller by a factor C<sub>v</sub> = x<sub>measured</sub> / x<sub>theory</sub>. As water flows out the level falls, and √h falls linearly with time (tank area A = 75 cm², hole diameter 4 mm)",
+ p2s:["Choose the hole height y (read on the amber vertical ruler)","Choose a starting level of 30 cm (green scale beside the tank, zero at the hole)","Press Open hole and ▶ together","Each time the level passes 25, 20, 15, 10, 5 cm, record the time and the landing distance x (work in pairs: one watches the time, one reads x)","Repeat for other y values"],
+ t4:"Table 4 Jet range and time (y = ...... cm)",
+ g2:"Plot x against √(hy); the slope equals 2C<sub>v</sub>. Find C<sub>v</sub>. Plot √h against t; the slope equals −(a/A)C<sub>v</sub>√(g/2)",
+ p3:"Part 3 Pipe at different heights",
+ p3t:"When the pipe rises by z the pressure inside falls, but z + p/ρg + v²/2g stays constant (if no energy is lost). The level h in a tube, read from the lower pipe centre line, equals z + p/ρg.",
+ p3s:["Choose the flow level, the rise Δz and the top pipe diameter","Wait for the levels in tubes A–D to settle, then read h (mm)","Find Q by timing 2.0 L of collected water, as in Part 1","Repeat for Δz = 0, 100, 200, 300 mm"],
+ t5:"Table 5 Pipe at different heights (flow level ...... · Δz ...... mm · top Ø ...... mm)",
+ g3:"Plot p/ρg at tube C against Δz; the slope should be close to −1",
+ q:"Questions",qs:["Why is the level in tube C (throat) the lowest?","Why is tube E lower than tube A although the pipe sizes are equal?","Why is C<sub>v</sub> less than 1?","With the total water level fixed, at what height should the hole be for the longest range?","In Part 3 with equal pipe sizes, why is the level in tube C close to tube A although the pipe is higher, while the pressure at C is lower?"],
+ sum:"Conclusion",print:"Print / Save PDF"};
+ const ol=a=>`<ol>${a.map(x=>`<li>${x}</li>`).join("")}</ol>`, lines=n=>Array.from({length:n},()=>'<div class="ln"></div>').join("");
+ return `<!doctype html><html lang="${S.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${T.title}</title><style>
+body{font-family:-apple-system,"Segoe UI","Noto Sans Thai",Sarabun,sans-serif;color:#111;max-width:800px;margin:0 auto;padding:20px;font-size:14px;line-height:1.55}
+h1{font-size:20px;margin:0 0 6px}h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid #0B1A2B;padding-bottom:2px}h3{font-size:14px;margin:12px 0 4px}
+table{border-collapse:collapse;width:100%;margin:6px 0 10px;font-size:13px}th,td{border:1px solid #555;padding:5px;height:22px;text-align:center}th{background:#eef1f5}
+.eq{font-family:ui-monospace,Menlo,Consolas,monospace;background:#f5f6f8;padding:6px 10px;border-radius:6px;margin:6px 0}
+.ln{border-bottom:1px dotted #777;height:24px}.cr{margin-top:24px;font-size:11px;color:#555;text-align:center}
+.pb{position:fixed;top:10px;right:10px;padding:8px 14px;border:1px solid #0B1A2B;background:#fff;border-radius:8px;font-size:14px}
+@media print{.pb{display:none}h2{break-after:avoid}table{break-inside:avoid}}
+</style></head><body><button class="pb" onclick="print()">${T.print}</button>
+<h1>${T.title}</h1><div>${T.info}</div>
+<h2>${T.obj}</h2>${ol(T.objs)}
+<h2>${T.p1}</h2><h3>${T.thy}</h3><p>${T.p1t}</p>
+<div class="eq">h + v²/2g = ${th?"ค่าคงที่":"constant"}<br>Q = V / t &nbsp;&nbsp; v = Q / A &nbsp;&nbsp; A = πD²/4</div>
+${ol(T.p1s)}
+<h3>${T.t1}</h3>${tbR([T.lv,"V (L)","t (s)","Q (L/s)","Q (m³/s)"],["1","2","3","4","5"])}
+<h3>${T.t2}</h3>${tbR([T.tube,"D (mm)","A (m²)","v (m/s)","v²/2g (mm)","h (mm)","h + v²/2g (mm)"],["A","B","C","D","E"])}
+<h3>${T.t3}</h3>${tbR([T.lv,"h<sub>A</sub> − h<sub>C</sub> (mm)","(v<sub>C</sub>² − v<sub>A</sub>²)/2g (mm)",T.diff],["1","2","3","4","5"])}
+<p>${T.g1}</p>
+<h2>${T.p2}</h2><h3>${T.thy}</h3><p>${T.p2t}</p>
+<div class="eq">v = C<sub>v</sub>√(2gh) &nbsp;&nbsp; x = 2C<sub>v</sub>√(hy)</div>
+${ol(T.p2s)}
+<h3>${T.t4}</h3>${tbR(["h (cm)","t (s)","√h (cm<sup>½</sup>)","x "+(th?"วัด":"measured")+" (cm)","2√(hy) (cm)","C<sub>v</sub>"],["30","25","20","15","10","5"])}
+<p>${T.g2}</p>
+<h2>${T.p3}</h2><h3>${T.thy}</h3><p>${T.p3t}</p>
+<div class="eq">z + p/ρg + v²/2g = ${th?"ค่าคงที่":"constant"} &nbsp;&nbsp; h = z + p/ρg</div>
+${ol(T.p3s)}
+<h3>${T.t5}</h3>${tbR([T.tube,"z (mm)","D (mm)","v (m/s)","h (mm)","p/ρg (mm)","v²/2g (mm)","h + v²/2g (mm)"],["A","B","C","D"])}
+<p>${T.g3}</p>
+<h2>${T.q}</h2>${T.qs.map((q,i)=>`<p>${i+1}. ${q}</p>${lines(2)}`).join("")}
+<h2>${T.sum}</h2>${lines(4)}
+<div class="cr">${L[S.lang].credit}</div></body></html>`}
+function openWS(){const html=wsHTML(),w=window.open("","_blank");
+ if(w){w.document.open();w.document.write(html);w.document.close()}
+ else{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));a.download="bernoulli-worksheet.html";a.click()}}
+
+renderAll();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
